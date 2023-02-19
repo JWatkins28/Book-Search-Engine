@@ -1,12 +1,16 @@
 const { User } = require('../models')
 const { signToken } = require('../utils/auth');
+const { AuthenticationError } = require('apollo-server-express');
 
 const resolvers = {
     Query: {
-        user: async (parent, args) => {
-            return User.find({
-                $or: [{ _id: args.id }, { username: args.username }]
-            })
+        user: async (parent, args, context) => {
+            if (context.user) {
+                return User.find({
+                    $or: [{ _id: context.user._id }, { username: context.user.username }]
+                })
+            }
+            throw new AuthenticationError('You need to be logged in')
         },
     },
     Mutation: {
