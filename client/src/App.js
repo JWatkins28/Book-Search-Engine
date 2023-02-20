@@ -1,14 +1,43 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
+// CHANGED THIS added: (createHttpLink)
+import { ApolloClient, ApolloProvider, InMemoryCache, createHttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+// ---
 import SearchBooks from './pages/SearchBooks';
 import SavedBooks from './pages/SavedBooks';
 import Navbar from './components/Navbar';
 
-const client = new ApolloClient({
+// ADDED THIS
+const httpLink = createHttpLink({
   uri: '/graphql',
+});
+
+// AND THIS
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('id_token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+// EDITED THIS
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  request: (operation) => {
+    const token = localStorage.getItem('id_token')
+
+    operation.setContext({
+      headers: {
+        authorization: token ? `Bearer ${token}` : '',
+      }
+    })
+  },
   cache: new InMemoryCache(),
-})
+});
 
 function App() {
   return (
@@ -18,11 +47,11 @@ function App() {
         <Navbar />
         <Routes>
           <Route 
-            path='/' 
+            exact path='/' 
             element={<SearchBooks />} 
           />
           <Route 
-            path='/saved' 
+            exact path='/saved' 
             element={<SavedBooks />} 
           />
           <Route 
