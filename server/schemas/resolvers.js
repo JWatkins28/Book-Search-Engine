@@ -1,30 +1,38 @@
 const { User } = require('../models')
 const { signToken } = require('../utils/auth');
+const { AuthenticationError } = require('apollo-server-express');
 
 const resolvers = {
     Query: {
-        user: async (parent, args) => {
-            return User.find({
-                $or: [{ _id: args.id }, { username: args.username }]
-            })
+        me: async (parent, args, context) => {
+            if (context.user) {
+                return User.findOne({_id: context.user._id}).populate('savedBooks')
+            }
+            throw new AuthenticationError('You need to be logged in')
         },
     },
     Mutation: {
-        saveBook: async (parent, args) => {
-            const updatedUser = await User.findOneAndUpdate(
-                { _id },
-                { $addToSet: { savedBooks: args } },
-                { new: true, runValidators: true }
-            );
-            return updatedUser;
+        saveBook: async (parent, args, context) => {
+            if (context.user) {
+                const updatedUser = await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $addToSet: { savedBooks: args.book } },
+                    { new: true }
+                );
+                return updatedUser;
+            }
+            throw new AuthenticationError("You need to be logged in")
         },
-        removeBook: async (parent, args) => {
-            const updatedUser = await User.findOneAndUpdate(
-                { _id },
-                { $pull: { savedBooks: { bookId: args.bookId } } },
-                { new: true }
-            );
-            return updatedUser;
+        removeBook: async (parent, args, context) => {
+            if (context.user) {
+                const updatedUser = await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $pull: { savedBooks: { bookId: args.bookId } } },
+                    { new: true }
+                );
+                return updatedUser;
+            }
+            throw new AuthenticationError("You need to be logged in");
         },
         addUser: async (parent, args) => {
             const user = await User.create(args);
