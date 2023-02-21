@@ -1,6 +1,5 @@
 const { gql } = require('apollo-server-express')
 
-// CHANGED User and Auth (Also changed user to me)
 const typeDefs = gql`
     type Query {
         me: User

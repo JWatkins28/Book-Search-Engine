@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const db = require('./config/connection');
+// IMPORT APOLLO SERVER AND OUR TYPEDEFS/RESOLVERS
 const { ApolloServer } = require('apollo-server-express');
 const { typeDefs, resolvers } = require('./schemas')
 const { authMiddleware } = require('./utils/auth')
@@ -8,6 +9,7 @@ const { authMiddleware } = require('./utils/auth')
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// CREATE THE APOLLO SERVER WITH OUR TYPEDEFS/RESOLVERS AND CONTEXT
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -22,10 +24,12 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 }
 
+// REDIRECT BAD URLS TO THE HOMEPAGE
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'))
 })
 
+// START THE APOLLO SERVER USING EXPRESS AS OUR MIDDLEWARE
 const startApolloServer = async (typeDefs, resolvers) => {
   await server.start();
   server.applyMiddleware({ app });
@@ -38,4 +42,5 @@ const startApolloServer = async (typeDefs, resolvers) => {
   });
 }
 
+// START THE APOLLO SERVER
 startApolloServer(typeDefs, resolvers);
