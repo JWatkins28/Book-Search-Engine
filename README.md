@@ -52,7 +52,9 @@ npm run develop
 
 ## **Usage**
 
-This product is free to use and can be modified as you see fit. If you want to contribute to this project directly, take a look at the [Contributing](#contributing) section. 
+This product is free to use and can be used to store a list of your favorite books or books you'd like to read! 
+
+If you want to contribute to this project directly, take a look at the [Contributing](#contributing) section. 
 
 ---
 
